@@ -31,7 +31,9 @@ float iaDestY;
 int iaDirection;
 boolean calculateDestIA = true;
 const float IA_INCREMENT = 2.00;
+float iaIncrement;
 int center;
+int level = 1;
 
 
 void initGame(){
@@ -66,13 +68,18 @@ void drawMiddleLine(){
 }
 
 void startTimer(){
+  drawLevel(level);
+  
+  iaIncrement = IA_INCREMENT + ((float)level) * .1;
+  Serial.println(iaIncrement);
+  
   drawTimer("3", 73);
   delay(1000);
   drawTimer("2", 73);
   delay(1000);
   drawTimer("1", 73);
   delay(1000);
-  eraseRegion(0, 50, width, 29);
+  eraseRegion(0, 39, width, 40);
 
   startGame();
 }
@@ -82,12 +89,12 @@ void startGame(){
   adversaryScore = 0;
   gameEnded = false;
   
-  drawCurrentScore();
+  drawCurrentScore(true);
   newRound(false);
 }
 
-void drawCurrentScore(){
-  if(gameStarted)
+void drawCurrentScore(boolean erase){
+  if(erase)
     eraseRegion(60, 4, 50, 15);
   
   drawMiddleLine();
@@ -112,6 +119,7 @@ void endGame(){
   if(score == MAX_SCORE){
     result = "YOU WIN !";
     posX = 27;
+    level ++;
   } else {
     result = "YOU LOOSE";
     posX = 25;
@@ -127,7 +135,7 @@ void updateScore(boolean loose){
   else
     score ++;
   
-  drawCurrentScore();
+  drawCurrentScore(true);
 }
 
 void newRound(boolean erase){
@@ -193,7 +201,8 @@ void updateBall(){
 
   ballY = constrain(BALL_RADIUS, ballY, height - BALL_RADIUS);
   drawMiddleLine();
-  drawBall();    
+  drawBall();
+  drawCurrentScore(false);
 
   if(ballX < 0 || ballX > width){
     addPoint(ballX < 0);
@@ -216,7 +225,8 @@ void updateRackets(){
   float percentPos = map(Esplora.readJoystickY(), -512, 512, 0, 100) * .01;
   racket1Y = percentPos * movingHeight;
 
-  if(racket1Y != prevRacket1Y || redrawRacket){
+  //if(racket1Y != prevRacket1Y || redrawRacket){
+  if(tick ==0 ){
     redrawRacket = false;
     eraseRegion(RACKET_OFFSET, prevRacket1Y, RACKET_WIDTH, RACKET_HEIGHT);
     prevRacket1Y = racket1Y;
@@ -241,15 +251,16 @@ void updateRackets(){
   }
   iaDirection = getSign(iaDestY - racket2Y);
   
-  if(abs(racket2Y - iaDestY) > IA_INCREMENT && tick == 0){
-    racket2Y += (IA_INCREMENT * iaDirection);
+  if(abs(racket2Y - iaDestY) > iaIncrement && tick == 0){
+    racket2Y += (iaIncrement * iaDirection);
   }
     
   //racket2Y = ballY - RACKET_HEIGHT * .5;
   racket2Y = constrain(racket2Y, 0, movingHeight);
   // CHEAT
 
-  if(racket2Y != prevRacket2Y || redrawRacket){
+  //if(racket2Y != prevRacket2Y || redrawRacket){
+  if(tick ==0 ){
     redrawRacket = false;
     eraseRegion(width - RACKET_OFFSET - RACKET_WIDTH, prevRacket2Y, RACKET_WIDTH, RACKET_HEIGHT);
     prevRacket2Y = racket2Y;
@@ -263,6 +274,12 @@ float calculateReboundY(){
     dest = abs(dest);
   if(dest > height)
     dest = height + (height - dest);
+  
+  int errorSign = getSign(random(-10, 10));
+  float error = (float)RACKET_HEIGHT * (1.00 - ((float)level) * .1) * errorSign * (float)random(0, 6) * .1;
+  dest += error;
+  Serial.println(error);
+  
   return dest - RACKET_HEIGHT * .5;
 }
 
@@ -280,12 +297,12 @@ void update(){
       updateBall();
       
       if(refreshScore())
-        drawCurrentScore();
+        drawCurrentScore(false);
     }
     updateRackets();
   } else if(Esplora.readButton(SWITCH_LEFT) == LOW){
     eraseScreen();
-    startGame();
+    startTimer();
   }
 }
 

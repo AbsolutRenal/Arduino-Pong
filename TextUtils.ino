@@ -12,6 +12,22 @@ void drawTimer(char time[], int posX){
   drawText(time, posX, 54, 255, 255, 255, 3, true, 180, 180, 180, width, 29, 0, 50, false);
 }
 
+void drawLevel(int nb){
+//void drawLevel(char& nbStr){
+  char nbStr[3];
+  sprintf(nbStr, "%d", nb);
+  
+  /*String nbStr;
+  nbStr = String(nb);
+  char buf[50];
+  nbStr.toCharArray(buf, 50);*/
+  //char* level = strcat("level ", nbStr);
+  //char level[] = "level ";
+  //level += nb;
+  drawText("level ", 60, 41, 255, 255, 255, 1, true, 80, 80, 80, width, 11, 0, 39, false);
+  drawText(nbStr, 94, 41, 255, 255, 255, 1, false, 80, 80, 80, width, 11, 0, 39, false);
+}
+
 void drawResult(char result[], int posX){
   drawText(result, posX, 54, 255, 255, 255, 2, true, 180, 180, 180, width, 22, 0, 50, false);
 }

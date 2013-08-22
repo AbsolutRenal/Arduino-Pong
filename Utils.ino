@@ -1,3 +1,6 @@
 int getSign(float n){
-  return n / abs(n);
+  int ret = n / abs(n);
+  if(ret == 0)
+    ret = 1;
+  return ret;
 }
