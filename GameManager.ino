@@ -69,10 +69,10 @@ void drawMiddleLine(){
 
 void startTimer(){
   drawLevel(level);
-  
+
   iaIncrement = IA_INCREMENT + ((float)level) * .1;
-  Serial.println(iaIncrement);
-  
+  //Serial.println(iaIncrement);
+
   drawTimer("3", 73);
   delay(1000);
   drawTimer("2", 73);
@@ -88,7 +88,7 @@ void startGame(){
   score = 0;
   adversaryScore = 0;
   gameEnded = false;
-  
+
   drawCurrentScore(true);
   newRound(false);
 }
@@ -96,7 +96,7 @@ void startGame(){
 void drawCurrentScore(boolean erase){
   if(erase)
     eraseRegion(60, 4, 50, 15);
-  
+
   drawMiddleLine();
 
   char scoreStr[3];
@@ -104,7 +104,7 @@ void drawCurrentScore(boolean erase){
   sprintf(scoreStr, "%d", score);
   sprintf(adversaryScoreStr, "%d", adversaryScore);
   drawScore(scoreStr, adversaryScoreStr);
-  
+
   if(score == MAX_SCORE || adversaryScore == MAX_SCORE){
     endGame();
   } 
@@ -112,19 +112,20 @@ void drawCurrentScore(boolean erase){
 
 void endGame(){
   gameStarted = false;
-  
+
   int posX;
   char* result;
-  
+
   if(score == MAX_SCORE){
     result = "YOU WIN !";
     posX = 27;
     level ++;
-  } else {
+  } 
+  else {
     result = "YOU LOOSE";
     posX = 25;
   }
-  
+
   drawResult(result, posX);
   gameEnded = true;
 }
@@ -134,7 +135,7 @@ void updateScore(boolean loose){
     adversaryScore ++;
   else
     score ++;
-  
+
   drawCurrentScore(true);
 }
 
@@ -150,12 +151,12 @@ void newRound(boolean erase){
   speedY = random(10, 20) * getSign(sign) * .1;
 
   /*Serial.print(speedX);
-  Serial.print("\t");
-  Serial.println(speedY);*/
+   Serial.print("\t");
+   Serial.println(speedY);*/
 
   drawRacket(RACKET_OFFSET, racket1Y);
   drawRacket(width - RACKET_OFFSET - RACKET_WIDTH, racket2Y);
-  
+
   if(erase){
     eraseRegion(0, 0, RACKET_OFFSET, height);
     eraseRegion(width - RACKET_OFFSET, 0, RACKET_OFFSET, height);
@@ -185,17 +186,34 @@ void updateBall(){
   if((ballY - BALL_RADIUS) <= 0 || (ballY + BALL_RADIUS) >= height){
     speedY *= -1;
   }
-  
+
   if(((ballX - BALL_RADIUS) <= (RACKET_OFFSET + RACKET_WIDTH) && (ballX - BALL_RADIUS) >= (RACKET_OFFSET + RACKET_WIDTH - 2) && ballY >= racket1Y && ballY <= (racket1Y + RACKET_HEIGHT))
-      || ((ballX + BALL_RADIUS) >= (width - RACKET_OFFSET - RACKET_WIDTH) && (ballX + BALL_RADIUS) <= (width - RACKET_OFFSET - RACKET_WIDTH + 2) && ballY >= racket2Y && ballY <= (racket2Y + RACKET_HEIGHT))
-      
-      || ((prevBallX - BALL_RADIUS) > (RACKET_OFFSET + RACKET_WIDTH) && (ballX - BALL_RADIUS) < (RACKET_OFFSET + RACKET_WIDTH) && ballY >= racket1Y && ballY <= (racket1Y + RACKET_HEIGHT))
-      || ((prevBallX + BALL_RADIUS) < (width - RACKET_OFFSET - RACKET_WIDTH) && (ballX + BALL_RADIUS) > (width - RACKET_OFFSET - RACKET_WIDTH) && ballY >= racket2Y && ballY <= (racket2Y + RACKET_HEIGHT))
-      ){
+    || ((ballX + BALL_RADIUS) >= (width - RACKET_OFFSET - RACKET_WIDTH) && (ballX + BALL_RADIUS) <= (width - RACKET_OFFSET - RACKET_WIDTH + 2) && ballY >= racket2Y && ballY <= (racket2Y + RACKET_HEIGHT))
+
+  || ((prevBallX - BALL_RADIUS) > (RACKET_OFFSET + RACKET_WIDTH) && (ballX - BALL_RADIUS) < (RACKET_OFFSET + RACKET_WIDTH) && ballY >= racket1Y && ballY <= (racket1Y + RACKET_HEIGHT))
+    || ((prevBallX + BALL_RADIUS) < (width - RACKET_OFFSET - RACKET_WIDTH) && (ballX + BALL_RADIUS) > (width - RACKET_OFFSET - RACKET_WIDTH) && ballY >= racket2Y && ballY <= (racket2Y + RACKET_HEIGHT))
+    ){
     redrawRacket = true;
+
+    float pos;
+    if(ballX > middle){
+      pos = racket2Y;
+    } 
+    else {
+      pos = racket1Y;
+    }
+    float bound = map(ballY, pos, pos + RACKET_HEIGHT, -10, 10) * .1;
+    
+    /*Serial.print(speedY);
+    Serial.print("\t:: ");
+    Serial.print(bound);
+    Serial.print("\t=> ");
+    Serial.println(speedY + bound);*/
+    speedY += bound;
+
     speedX *= -1.1;
     speedY *= 1.1;
-    
+
     rebound();
   }
 
@@ -211,18 +229,18 @@ void updateBall(){
 
 void addPoint(boolean loose){  
   updateScore(loose);
-  
+
   if(loose)
     loosePoint();
   else
     winPoint();
-  
+
   if(gameStarted)
     newRound(true);
 }
 
 void updateRackets(){
-  float percentPos = map(Esplora.readJoystickY(), -512, 512, 0, 100) * .01;
+  float percentPos = map(Esplora.readJoystickY(), -512, 511, 0, 100) * .01;
   racket1Y = percentPos * movingHeight;
 
   //if(racket1Y != prevRacket1Y || redrawRacket){
@@ -232,7 +250,7 @@ void updateRackets(){
     prevRacket1Y = racket1Y;
     drawRacket(RACKET_OFFSET, racket1Y);
   }
-  
+
   // CHEAT
   if(ballX < middle){
     if(iaDestY != center){
@@ -240,21 +258,22 @@ void updateRackets(){
       iaDestY = center;
       //iaDirection = getSign(iaDestY - racket2Y);
     }
-  } else if(speedX > 0 && calculateDestIA == true){
+  } 
+  else if(speedX > 0 && calculateDestIA == true){
     calculateDestIA = false;
     iaDestY = calculateReboundY();
     /*iaDirection = getSign(iaDestY - racket2Y);
-    Serial.print("iaDirection: ");
-    Serial.print(iaDirection);
-    Serial.print("\t dest: ");
-    Serial.println(iaDestY);*/
+     Serial.print("iaDirection: ");
+     Serial.print(iaDirection);
+     Serial.print("\t dest: ");
+     Serial.println(iaDestY);*/
   }
   iaDirection = getSign(iaDestY - racket2Y);
-  
+
   if(abs(racket2Y - iaDestY) > iaIncrement && tick == 0){
     racket2Y += (iaIncrement * iaDirection);
   }
-    
+
   //racket2Y = ballY - RACKET_HEIGHT * .5;
   racket2Y = constrain(racket2Y, 0, movingHeight);
   // CHEAT
@@ -274,12 +293,12 @@ float calculateReboundY(){
     dest = abs(dest);
   if(dest > height)
     dest = height + (height - dest);
-  
+
   int errorSign = getSign(random(-10, 10));
   float error = (float)RACKET_HEIGHT * (1.00 - ((float)level) * .1) * errorSign * (float)random(0, 6) * .1;
   dest += error;
-  Serial.println(error);
-  
+  //Serial.println(error);
+
   return dest - RACKET_HEIGHT * .5;
 }
 
@@ -295,12 +314,13 @@ void update(){
       //drawCurrentScore();
       tick = 0;
       updateBall();
-      
+
       if(refreshScore())
         drawCurrentScore(false);
     }
     updateRackets();
-  } else if(Esplora.readButton(SWITCH_LEFT) == LOW){
+  } 
+  else if(Esplora.readButton(SWITCH_LEFT) == LOW){
     eraseScreen();
     startTimer();
   }
@@ -308,14 +328,17 @@ void update(){
 
 boolean refreshScore(){
   boolean ret = false;
-  
+
   if(ballY < (14 + REDRAW_OFFSET) && ballX > (61 - REDRAW_OFFSET) && ballX < (100 + REDRAW_OFFSET)){
     scoreRedraw = true;
-  } else if(scoreRedraw){
+  } 
+  else if(scoreRedraw){
     scoreRedraw = false;
     ret = true;
   }
-  
+
   return ret;
 }
+
+
 
