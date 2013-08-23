@@ -7,4 +7,4 @@ I tried making a Pong game but code could and should be improved due to the fact
 
 Don't hesitate to contact me to suggest some improvements and help me progress with C# !
 
-A quick demo is available on youtube : http://www.youtube.com/watch?v=u-DIG7e5LIE
+A quick demo is available on youtube : http://youtu.be/qBdsUDIxfKk
