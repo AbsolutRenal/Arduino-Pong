@@ -35,7 +35,7 @@ const int RED_BACKGROUND = 255;
 const int GREEN_BACKGROUND = 255;
 const int BLUE_BACKGROUND = 255;
 const int MENU_OFFSET = 5;
-char* MENU[] = {"PLAY", "HELP", "CREDITS"};
+char* MENU[] = {"JOUER", "HELP", "CREDITS"};
 
 #define MENU_LENGTH (sizeof(MENU)/sizeof(char*))
 
